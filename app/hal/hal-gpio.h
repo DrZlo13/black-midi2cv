@@ -5,8 +5,6 @@
 
 #define GPIO_NUMBER (16U)
 
-typedef void (*GpioCallback)(void* context);
-
 class HalGpio {
 private:
     GPIO_TypeDef* port;
@@ -115,8 +113,6 @@ public:
     void write(bool value);
     bool read(void);
 
-    void add_interrupt_callback(GpioCallback cb, void* ctx);
-    void enable_interrupt_callback(void);
-    void disable_interrupt_callback(void);
-    void remove_interrupt_callback(void);
+    typedef void (*Callback)(void* context);
+    void set_interrupt_callback(Callback cb, void* ctx);
 };

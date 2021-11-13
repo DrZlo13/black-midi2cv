@@ -22,10 +22,8 @@ HalUart::HalUart(USART_TypeDef* uart, uint32_t baudrate) {
 
     if(this->uart == USART1) {
         NVIC_SetPriority(USART1_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-        NVIC_EnableIRQ(USART1_IRQn);
     } else if(this->uart == USART2) {
         NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-        NVIC_EnableIRQ(USART2_IRQn);
     }
 }
 
@@ -37,8 +35,6 @@ void HalUart::transmit(const std::string& string) {
 }
 
 void HalUart::transmit(const uint8_t* buffer, size_t buffer_size) {
-    if(LL_USART_IsEnabled(this->uart) == 0) return;
-
     while(buffer_size > 0) {
         while(!LL_USART_IsActiveFlag_TXE(this->uart))
             ;

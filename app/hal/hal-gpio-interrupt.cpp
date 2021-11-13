@@ -4,50 +4,23 @@
 #include <stm32f4xx_ll_exti.h>
 
 typedef struct {
-    GpioCallback callback;
+    HalGpio::Callback callback;
     void* context;
-    volatile bool ready;
 } GpioInterrupt;
 
 static volatile GpioInterrupt gpio_interrupt[GPIO_NUMBER] = {0};
 
 static void gpio_interrupt_call(uint16_t pin_num) {
-    if(gpio_interrupt[pin_num].callback && gpio_interrupt[pin_num].ready) {
+    if(gpio_interrupt[pin_num].callback != NULL) {
         gpio_interrupt[pin_num].callback(gpio_interrupt[pin_num].context);
     }
 }
 
-void HalGpio::add_interrupt_callback(GpioCallback callback, void* context) {
+void HalGpio::set_interrupt_callback(Callback callback, void* context) {
     __disable_irq();
     uint8_t pin_num = get_first_index_of_one(this->pin);
     gpio_interrupt[pin_num].callback = callback;
     gpio_interrupt[pin_num].context = context;
-    gpio_interrupt[pin_num].ready = true;
-    __enable_irq();
-}
-
-void HalGpio::enable_interrupt_callback(void) {
-    __disable_irq();
-    uint8_t pin_num = get_first_index_of_one(this->pin);
-    if(gpio_interrupt[pin_num].callback) {
-        gpio_interrupt[pin_num].ready = true;
-    }
-    __enable_irq();
-}
-
-void HalGpio::disable_interrupt_callback(void) {
-    __disable_irq();
-    uint8_t pin_num = get_first_index_of_one(this->pin);
-    gpio_interrupt[pin_num].ready = false;
-    __enable_irq();
-}
-
-void HalGpio::remove_interrupt_callback(void) {
-    __disable_irq();
-    uint8_t pin_num = get_first_index_of_one(this->pin);
-    gpio_interrupt[pin_num].callback = NULL;
-    gpio_interrupt[pin_num].context = NULL;
-    gpio_interrupt[pin_num].ready = false;
     __enable_irq();
 }
 
