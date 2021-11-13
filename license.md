@@ -1,0 +1,1 @@
+You cannot use this code for anything that might be considered as commercial use.
