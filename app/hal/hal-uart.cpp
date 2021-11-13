@@ -1,4 +1,5 @@
 #include "hal-uart.h"
+#include <string.h>
 #include <stm32f4xx_ll_usart.h>
 
 HalUart::HalUart(USART_TypeDef* uart) {
@@ -42,6 +43,10 @@ void HalUart::transmit(const std::string& string) {
     transmit(reinterpret_cast<const uint8_t*>(string.data()), string.size());
 }
 
+void HalUart::transmit(const char* cstring) {
+    transmit(reinterpret_cast<const uint8_t*>(cstring), strlen(cstring));
+}
+
 void HalUart::transmit(const uint8_t* buffer, size_t buffer_size) {
     while(buffer_size > 0) {
         while(!LL_USART_IsActiveFlag_TXE(this->uart))
@@ -51,4 +56,25 @@ void HalUart::transmit(const uint8_t* buffer, size_t buffer_size) {
         buffer++;
         buffer_size--;
     }
+}
+
+void HalUart::transmit_as_hex(const uint8_t data) {
+    char symbol;
+    uint8_t nibble;
+
+    nibble = (data >> 4) & 0xF;
+    if(nibble > 9)
+        symbol = 'A' + nibble - 10;
+    else
+        symbol = '0' + nibble;
+
+    this->transmit((const uint8_t*)&symbol, 1);
+
+    nibble = data & 0xF;
+    if(nibble > 9)
+        symbol = 'A' + nibble - 10;
+    else
+        symbol = '0' + nibble;
+
+    this->transmit((const uint8_t*)&symbol, 1);
 }
