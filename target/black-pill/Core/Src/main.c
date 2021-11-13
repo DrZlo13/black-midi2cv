@@ -206,7 +206,7 @@ static void MX_USART1_UART_Init(void)
   LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* USER CODE BEGIN USART1_Init 1 */
-
+  return;
   /* USER CODE END USART1_Init 1 */
   USART_InitStruct.BaudRate = 31250;
   USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
@@ -257,7 +257,7 @@ static void MX_USART2_UART_Init(void)
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* USER CODE BEGIN USART2_Init 1 */
-
+  return;
   /* USER CODE END USART2_Init 1 */
   USART_InitStruct.BaudRate = 115200;
   USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;

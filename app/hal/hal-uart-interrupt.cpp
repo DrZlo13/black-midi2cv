@@ -36,7 +36,7 @@ void HalUart::set_interrupt_callback(EventCallback callback, void* context) {
 
 extern "C" void USART1_IRQHandler(void) {
     if(LL_USART_IsActiveFlag_RXNE(USART1)) {
-        uint8_t data = LL_USART_ReceiveData8(USART2);
+        uint8_t data = LL_USART_ReceiveData8(USART1);
         if(uart_unterrupt[UART_1].callback != NULL) {
             uart_unterrupt[UART_1].callback(
                 HalUart::Event::RXNotEmpty, data, uart_unterrupt[UART_1].context);
@@ -49,6 +49,10 @@ extern "C" void USART1_IRQHandler(void) {
         LL_USART_ClearFlag_IDLE(USART1);
     } else if(LL_USART_IsActiveFlag_ORE(USART1)) {
         LL_USART_ClearFlag_ORE(USART1);
+    } else if(LL_USART_IsActiveFlag_FE(USART1)) {
+        LL_USART_ClearFlag_FE(USART1);
+    } else if(LL_USART_IsActiveFlag_NE(USART1)) {
+        LL_USART_ClearFlag_NE(USART1);
     }
 }
 
@@ -65,7 +69,11 @@ extern "C" void USART2_IRQHandler(void) {
                 HalUart::Event::Idle, 0, uart_unterrupt[UART_2].context);
         }
         LL_USART_ClearFlag_IDLE(USART2);
-    } else if(LL_USART_IsActiveFlag_ORE(USART2)) {
-        LL_USART_ClearFlag_ORE(USART2);
+    } else if(LL_USART_IsActiveFlag_ORE(USART1)) {
+        LL_USART_ClearFlag_ORE(USART1);
+    } else if(LL_USART_IsActiveFlag_FE(USART1)) {
+        LL_USART_ClearFlag_FE(USART1);
+    } else if(LL_USART_IsActiveFlag_NE(USART1)) {
+        LL_USART_ClearFlag_NE(USART1);
     }
 }
