@@ -1,8 +1,19 @@
 #include "hal-uart.h"
 #include <stm32f4xx_ll_usart.h>
 
-HalUart::HalUart(USART_TypeDef* uart, uint32_t baudrate) {
+HalUart::HalUart(USART_TypeDef* uart) {
     this->uart = uart;
+}
+
+HalUart::~HalUart() {
+}
+
+void HalUart::config(uint32_t baudrate) {
+    if(LL_USART_IsEnabled(this->uart)) {
+        while(!LL_USART_IsActiveFlag_TC(this->uart))
+            ;
+        LL_USART_Disable(this->uart);
+    }
 
     LL_USART_InitTypeDef USART_InitStruct = {0};
     USART_InitStruct.BaudRate = baudrate;
@@ -25,9 +36,6 @@ HalUart::HalUart(USART_TypeDef* uart, uint32_t baudrate) {
     } else if(this->uart == USART2) {
         NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
     }
-}
-
-HalUart::~HalUart() {
 }
 
 void HalUart::transmit(const std::string& string) {

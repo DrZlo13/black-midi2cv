@@ -33,16 +33,9 @@
 #define GET_SYSCFG_EXTI_LINE(pin) GPIO_PIN_MAP(pin, LL_SYSCFG_EXTI_LINE)
 #define GET_EXTI_LINE(pin) GPIO_PIN_MAP(pin, LL_EXTI_LINE_)
 
-HalGpio::HalGpio(
-    GPIO_TypeDef* port,
-    uint16_t pin,
-    const HalGpio::Mode mode,
-    const HalGpio::Pull pull,
-    const HalGpio::Speed speed,
-    const HalGpio::AltFn alt_fn) {
+HalGpio::HalGpio(GPIO_TypeDef* port, uint16_t pin) {
     this->port = port;
     this->pin = pin;
-    config(mode, pull, speed, alt_fn);
 }
 
 HalGpio::~HalGpio() {

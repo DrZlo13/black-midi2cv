@@ -21,4 +21,9 @@ void hal_init(void) {
 
     NVIC_SetPriority(EXTI15_10_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
     NVIC_EnableIRQ(EXTI15_10_IRQn); */
+
+    gpio_led.config(HalGpio::Mode::OutputPushPull);
+    gpio_button.config(HalGpio::Mode::Input, HalGpio::Pull::Up);
+    uart_midi.config(31250);
+    uart_debug.config(115200);
 }

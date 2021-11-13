@@ -17,8 +17,10 @@ public:
 
     typedef void (*EventCallback)(Event event, uint8_t data, void* context);
 
-    HalUart(USART_TypeDef* uart, uint32_t baudrate);
+    HalUart(USART_TypeDef* uart);
     ~HalUart();
+    void config(uint32_t baudrate);
+
     void transmit(const std::string& string);
     void transmit(const uint8_t* buffer, size_t buffer_size);
 

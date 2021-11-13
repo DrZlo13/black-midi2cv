@@ -95,13 +95,7 @@ public:
         AF_DISABLE = 0x10, /* No Alternate Function */
     };
 
-    HalGpio(
-        GPIO_TypeDef* port,
-        uint16_t pin,
-        const HalGpio::Mode mode = Mode::Analog,
-        const HalGpio::Pull pull = Pull::No,
-        const HalGpio::Speed speed = Speed::Low,
-        const HalGpio::AltFn alt_fn = AltFn::AF_DISABLE);
+    HalGpio(GPIO_TypeDef* port, uint16_t pin);
     ~HalGpio();
 
     void config(
