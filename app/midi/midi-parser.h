@@ -1,5 +1,4 @@
 #include "midi-message.h"
-//#include <etl/include/etl/circular_buffer.h>
 
 class MidiParser {
 private:
@@ -21,8 +20,6 @@ private:
     Midi::MidiMessageType running_status_;
     ParserState pstate_;
     Midi::MidiEvent incoming_message_;
-
-    //etl::circular_buffer<Midi::MidiEvent, 1> queue_;
 
 public:
     MidiParser();

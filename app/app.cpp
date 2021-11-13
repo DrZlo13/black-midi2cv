@@ -79,12 +79,6 @@ void app_main(void) {
 
                 gpio_led.write(1);
             }
-            /*gpio_led.write(0);
-            uart_debug.transmit(&data, 1);
-            uart_debug.transmit(" = ");
-            uart_debug.transmit_as_hex(data);
-            uart_debug.transmit("\r\n");
-            gpio_led.write(1);*/
         }
     }
 }
