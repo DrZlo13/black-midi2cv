@@ -1,9 +1,11 @@
 #include "hal-uart.h"
 #include <stm32f4xx_ll_usart.h>
 
-#define UART_1 0
-#define UART_2 1
-#define UART_MAX 2
+typedef enum {
+    UART_1 = 0,
+    UART_2 = 1,
+    UART_MAX
+} UartList;
 
 typedef struct {
     HalUart::EventCallback callback;

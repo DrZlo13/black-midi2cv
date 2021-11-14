@@ -8,7 +8,7 @@ typedef struct {
     void* context;
 } GpioInterrupt;
 
-static volatile GpioInterrupt gpio_interrupt[GPIO_NUMBER] = {0};
+static volatile GpioInterrupt gpio_interrupt[GPIO_COUNT] = {0};
 
 static void gpio_interrupt_call(uint16_t pin_num) {
     if(gpio_interrupt[pin_num].callback != NULL) {

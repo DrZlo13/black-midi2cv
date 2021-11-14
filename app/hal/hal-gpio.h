@@ -3,7 +3,7 @@
 #include "helper.h"
 #include <stm32f4xx_ll_gpio.h>
 
-#define GPIO_NUMBER (16U)
+constexpr inline uint8_t GPIO_COUNT = 16;
 
 class HalGpio {
 private:
