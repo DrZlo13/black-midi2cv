@@ -2,6 +2,7 @@
 #include <main.h>
 #include <string>
 #include "hal/hal.h"
+#include "core/core.h"
 #include "midi/midi-parser.h"
 #include <etl/include/etl/queue_spsc_atomic.h>
 
@@ -11,7 +12,7 @@ using namespace Midi;
 void uart1_event_cb(HalUart::Event event, uint8_t data, void* context) {
     if(event == HalUart::Event::RXNotEmpty) {
         if(!uart_midi_queue.push(data)) {
-            // TODO Error
+            core_crash("Uart MIDI queue full");
         }
     }
 }

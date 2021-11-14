@@ -69,9 +69,9 @@ target_compile_options(${PROJECT_NAME}.elf PRIVATE
     -u _printf_float
     #-Werror
     #-Wextra
-    $<$<COMPILE_LANGUAGE:C>:-std=c2x>
+    $<$<COMPILE_LANGUAGE:C>:-std=gnu2x>
     $<$<COMPILE_LANGUAGE:C>:-Wenum-conversion>
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++20>
+    $<$<COMPILE_LANGUAGE:CXX>:-std=gnu++20>
     $<$<COMPILE_LANGUAGE:CXX>:-fno-threadsafe-statics>
     $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
     $<$<COMPILE_LANGUAGE:CXX>:-fno-use-cxa-atexit>
