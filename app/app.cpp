@@ -12,7 +12,7 @@ using namespace Midi;
 void uart1_event_cb(HalUart::Event event, uint8_t data, void* context) {
     if(event == HalUart::Event::RXNotEmpty) {
         if(!uart_midi_queue.push(data)) {
-            core_crash("Uart MIDI queue full");
+            core_crash("MIDI-Uart queue full");
         }
     }
 }
