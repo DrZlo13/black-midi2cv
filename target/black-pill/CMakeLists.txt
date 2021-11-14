@@ -33,6 +33,19 @@ file(GLOB TARGET_SOURCES
 	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c
 	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_utils.c
 	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_exti.c
+
+	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c
+	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c
+	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c
+	${TARGET_SOURCE_DIR}/USB/usb_interrupts.c
+	${TARGET_SOURCE_DIR}/USB/Device/App/usb_device.c
+	${TARGET_SOURCE_DIR}/USB/Device/App/usbd_desc.c
+	${TARGET_SOURCE_DIR}/USB/Device/App/usbd_cdc_if.c
+	${TARGET_SOURCE_DIR}/USB/Device/Target/usbd_conf.c
+	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Core/Src/usbd_core.c
+	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c
+	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c
+	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c
 )
 
 # Look here for header files.
@@ -42,6 +55,10 @@ set(TARGET_DIRECTORIES
 	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
 	${TARGET_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32F4xx/Include
 	${TARGET_SOURCE_DIR}/Drivers/CMSIS/Include
+	${TARGET_SOURCE_DIR}/USB/Device/App
+	${TARGET_SOURCE_DIR}/USB/Device/Target
+	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Core/Inc
+	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Class/CDC/Inc
     ${TARGET_SOURCE_DIR}
 )
 

@@ -17,6 +17,7 @@
   *
   ******************************************************************************
   */
+#define HAL_PCD_MODULE_ENABLED
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
