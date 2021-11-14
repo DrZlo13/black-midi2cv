@@ -39,7 +39,7 @@ void HalUart::config(uint32_t baudrate) {
     }
 }
 
-void HalUart::transmit(const std::string& string) {
+void HalUart::transmit(const std::string_view string) {
     transmit(reinterpret_cast<const uint8_t*>(string.data()), string.size());
 }
 

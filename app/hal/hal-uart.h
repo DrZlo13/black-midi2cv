@@ -21,7 +21,7 @@ public:
     ~HalUart();
     void config(uint32_t baudrate);
 
-    void transmit(const std::string& string);
+    void transmit(const std::string_view string);
     void transmit(const char* cstring);
     void transmit(const uint8_t* buffer, size_t buffer_size);
     void transmit_as_hex(const uint8_t data);
