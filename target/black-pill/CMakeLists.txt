@@ -40,12 +40,14 @@ file(GLOB TARGET_SOURCES
 	${TARGET_SOURCE_DIR}/USB/usb_interrupts.c
 	${TARGET_SOURCE_DIR}/USB/Device/App/usb_device.c
 	${TARGET_SOURCE_DIR}/USB/Device/App/usbd_desc.c
-	${TARGET_SOURCE_DIR}/USB/Device/App/usbd_cdc_if.c
+	# ${TARGET_SOURCE_DIR}/USB/Device/App/usbd_cdc_if.c
 	${TARGET_SOURCE_DIR}/USB/Device/Target/usbd_conf.c
 	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Core/Src/usbd_core.c
 	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c
 	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c
-	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c
+	# ${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c
+	${CMAKE_SOURCE_DIR}/lib/usb_midi_device/usbd_midi.c
+	${CMAKE_SOURCE_DIR}/lib/usb_midi_device/usbd_midi_if.c
 )
 
 # Look here for header files.
@@ -58,7 +60,7 @@ set(TARGET_DIRECTORIES
 	${TARGET_SOURCE_DIR}/USB/Device/App
 	${TARGET_SOURCE_DIR}/USB/Device/Target
 	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Core/Inc
-	${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Class/CDC/Inc
+	# ${TARGET_SOURCE_DIR}/USB/STM32_USB_Device_Library/Class/CDC/Inc
     ${TARGET_SOURCE_DIR}
 )
 

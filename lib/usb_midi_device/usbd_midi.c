@@ -480,7 +480,7 @@ static uint8_t USBD_MIDI_DataOut(USBD_HandleTypeDef* pdev, uint8_t epnum) {
   * @param  req: setup class request
   * @retval status
   */
-static void MIDI_REQ_GetCurrent(USBD_HandleTypeDef* pdev, USBD_SetupReqTypedef* req) {
+static void __attribute((unused)) MIDI_REQ_GetCurrent(USBD_HandleTypeDef* pdev, USBD_SetupReqTypedef* req) {
     return;
 }
 
@@ -491,7 +491,7 @@ static void MIDI_REQ_GetCurrent(USBD_HandleTypeDef* pdev, USBD_SetupReqTypedef* 
   * @param  req: setup class request
   * @retval status
   */
-static void MIDI_REQ_SetCurrent(USBD_HandleTypeDef* pdev, USBD_SetupReqTypedef* req) {
+static void __attribute((unused)) MIDI_REQ_SetCurrent(USBD_HandleTypeDef* pdev, USBD_SetupReqTypedef* req) {
     return;
 }
 
