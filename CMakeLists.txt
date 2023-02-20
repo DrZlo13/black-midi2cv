@@ -23,7 +23,6 @@ find_program(CMAKE_OBJCOPY NAMES ${STM32_TARGET_TRIPLET}-objcopy PATHS ${TOOLCHA
 find_program(CMAKE_OBJDUMP NAMES ${STM32_TARGET_TRIPLET}-objdump PATHS ${TOOLCHAIN_BIN_PATH})
 find_program(SIZE NAMES ${STM32_TARGET_TRIPLET}-size PATHS ${TOOLCHAIN_BIN_PATH})
 
-
 # project start
 PROJECT("Black-MIDI2CV" C CXX ASM)
 
@@ -33,7 +32,7 @@ include_directories(${INCLUDE_DIRECTORIES})
 include_directories(${CMAKE_SOURCE_DIR}/app)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 
-file(GLOB CORE_SOURCES 
+file(GLOB CORE_SOURCES
     "app/*.c"
     "app/*.cpp"
     "app/*/*.c"
@@ -44,14 +43,14 @@ file(GLOB CORE_SOURCES
     "app/*/*/*/*/*.cpp"
 )
 
-set(SOURCES 
-    ${SOURCES} 
-    ${CORE_SOURCES} 
+set(SOURCES
+    ${SOURCES}
+    ${CORE_SOURCES}
 )
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 
-target_compile_options(${PROJECT_NAME}.elf PRIVATE 
+target_compile_options(${PROJECT_NAME}.elf PRIVATE
     -mcpu=cortex-m4
     -Og
     -g
@@ -67,8 +66,9 @@ target_compile_options(${PROJECT_NAME}.elf PRIVATE
     -mfloat-abi=hard
     -mthumb
     -u _printf_float
-    #-Werror
-    #-Wextra
+
+    # -Werror
+    # -Wextra
     $<$<COMPILE_LANGUAGE:C>:-std=gnu2x>
     $<$<COMPILE_LANGUAGE:C>:-Wenum-conversion>
     $<$<COMPILE_LANGUAGE:CXX>:-std=gnu++20>
@@ -79,7 +79,7 @@ target_compile_options(${PROJECT_NAME}.elf PRIVATE
     $<$<COMPILE_LANGUAGE:CXX>:-Wno-volatile>
 )
 
-target_link_options(${PROJECT_NAME}.elf PRIVATE 
+target_link_options(${PROJECT_NAME}.elf PRIVATE
     -mcpu=cortex-m4
     -T ${LINKER_SCRIPT}
     --specs=nosys.specs
@@ -96,10 +96,11 @@ target_link_options(${PROJECT_NAME}.elf PRIVATE
     -Wl,--start-group -lstdc++ -lsupc++
     -Wl,--end-group
     -Wl,--print-memory-usage -T ${LINKER_SCRIPT}
-    #-Wl,--wrap,_malloc_r
-    #-Wl,--wrap,_free_r
-    #-Wl,--wrap,_calloc_r
-    #-Wl,--wrap,_realloc_r
+
+    # -Wl,--wrap,_malloc_r
+    # -Wl,--wrap,_free_r
+    # -Wl,--wrap,_calloc_r
+    # -Wl,--wrap,_realloc_r
 )
 
 set(COMMON_FLAGS
@@ -123,7 +124,8 @@ string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M:%S")
 set(INFO_FLAGS
     GIT_BRANCH="${GIT_BRANCH}"
     GIT_COMMIT="${GIT_COMMIT}"
-    #BUILD_DATE="${BUILD_DATE}"
+
+    # BUILD_DATE="${BUILD_DATE}"
     TARGET=${FTARGET}
 )
 
@@ -131,7 +133,7 @@ message(STATUS "Branch: ${GIT_BRANCH}")
 message(STATUS "Commit: ${GIT_COMMIT}")
 message(STATUS "Date  : ${BUILD_DATE}")
 
-target_compile_definitions(${PROJECT_NAME}.elf PRIVATE 
+target_compile_definitions(${PROJECT_NAME}.elf PRIVATE
     ${TARGET_FLAGS}
     ${COMMON_FLAGS}
     ${INFO_FLAGS}
@@ -156,7 +158,7 @@ Building ${BIN_FILE}")
 # Generate assembly listing.
 add_custom_command(
     TARGET ${PROJECT_NAME}.elf
-    COMMAND rm ${PROJECT_NAME}.lst -f
+    COMMAND rm -f ${PROJECT_NAME}.lst
     COMMAND ${CMAKE_OBJDUMP}
     ARGS "-S" "${PROJECT_NAME}.elf" ">>" "${PROJECT_NAME}.lst")
 
