@@ -6,8 +6,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # specify cross compilers and tools
 set(TOOLCHAIN_BIN_PATH "C:/work/cmake-stm32/arm_toolchain/gcc-arm-none-eabi-10-2020-q4-major/bin")
-set(OPENOCD_PATH "C:/work/cmake-stm32/arm_toolchain/GNU MCU Eclipse/OpenOCD/0.10.0-15")
-set(ST_CUBEPROG_PATH "C:/Program Files/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin")
 
 set(STM32_TARGET_TRIPLET arm-none-eabi)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
@@ -125,7 +123,7 @@ set(INFO_FLAGS
     GIT_BRANCH="${GIT_BRANCH}"
     GIT_COMMIT="${GIT_COMMIT}"
 
-    # BUILD_DATE="${BUILD_DATE}"
+    BUILD_DATE="${BUILD_DATE}"
     TARGET=${FTARGET}
 )
 
@@ -164,6 +162,6 @@ add_custom_command(
 
 # Flash firmware to target.
 add_custom_target(flash
-    ${ST_CUBEPROG_PATH}/STM32_Programmer_CLI --connect port=swd freq=24000 --write ${BIN_FILE} 0x08000000 --verify --start 0x08000000
+    STM32_Programmer_CLI --connect port=swd freq=24000 --write ${BIN_FILE} 0x08000000 --verify --start 0x08000000
     DEPENDS ${PROJECT_NAME}.elf
     COMMENT "Flashing target hardware")

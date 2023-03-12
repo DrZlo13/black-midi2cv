@@ -24,6 +24,6 @@ void hal_init(void) {
 
     gpio_led.config(HalGpio::Mode::OutputPushPull);
     gpio_button.config(HalGpio::Mode::Input, HalGpio::Pull::Up);
-    uart_midi.config(115200);
+    uart_midi.config(31250);
     uart_debug.config(115200);
 }
