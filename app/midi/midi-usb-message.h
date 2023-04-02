@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include "../core/core.h"
 
 namespace UsbMidi {
 enum CodeIndex {
@@ -100,7 +99,7 @@ struct Message {
 };
 
 Message::Message(uint8_t* data, uint32_t length) {
-    if(length != 4) core_crash("Invalid MIDI-USB protocol");
+    // if(length != 4) core_crash("Invalid MIDI-USB protocol");
 
     cable_number = extract_cable_number(data[0]);
     code_index = extract_code_index(data[0]);

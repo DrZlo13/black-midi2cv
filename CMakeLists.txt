@@ -117,7 +117,7 @@ execute_process(
     OUTPUT_VARIABLE GIT_BRANCH
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M:%S")
+string(TIMESTAMP BUILD_DATE "%Y-%m-%d")
 
 set(INFO_FLAGS
     GIT_BRANCH="${GIT_BRANCH}"
@@ -141,6 +141,10 @@ set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
 
 set_target_properties(${PROJECT_NAME}.elf PROPERTIES LINKER_LANGUAGE CXX)
+
+# Add voice_allocator_library_cpp
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/voice_allocator_library_cpp")
+target_link_libraries(${PROJECT_NAME}.elf "voice_allocator_library_cpp")
 
 # Print size
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD

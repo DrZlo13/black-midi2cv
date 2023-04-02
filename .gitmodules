@@ -1,3 +1,6 @@
 [submodule "lib/etl"]
 	path = lib/etl
 	url = https://github.com/ETLCPP/etl.git
+[submodule "lib/voice_allocator_library_cpp"]
+	path = lib/voice_allocator_library_cpp
+	url = https://github.com/DrZlo13/voice_allocator_library_cpp.git

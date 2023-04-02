@@ -71,12 +71,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LED_PIN_Pin LL_GPIO_PIN_13
-#define LED_PIN_GPIO_Port GPIOC
-#define TIM2_CH1_CH1_MSB_Pin LL_GPIO_PIN_0
-#define TIM2_CH1_CH1_MSB_GPIO_Port GPIOA
-#define TIM2_CH2_CH1_LSB_Pin LL_GPIO_PIN_1
-#define TIM2_CH2_CH1_LSB_GPIO_Port GPIOA
 #define USART2_DEBUG_TX_Pin LL_GPIO_PIN_2
 #define USART2_DEBUG_TX_GPIO_Port GPIOA
 #define USART2_DEBUG_RX_Pin LL_GPIO_PIN_3
@@ -97,6 +91,10 @@ void Error_Handler(void);
 #define TIM1_CH2_CH2_LSB_GPIO_Port GPIOA
 #define USART1_MIDI_RX_Pin LL_GPIO_PIN_10
 #define USART1_MIDI_RX_GPIO_Port GPIOA
+#define TIM2_CH1_CH1_MSB_Pin LL_GPIO_PIN_15
+#define TIM2_CH1_CH1_MSB_GPIO_Port GPIOA
+#define TIM2_CH2_CH1_LSB_Pin LL_GPIO_PIN_3
+#define TIM2_CH2_CH1_LSB_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

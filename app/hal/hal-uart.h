@@ -19,7 +19,7 @@ public:
 
     HalUart(USART_TypeDef* uart);
     ~HalUart();
-    void config(uint32_t baudrate);
+    void config(uint32_t baudrate, bool rx_enable, bool tx_enable);
 
     void transmit(const std::string_view string);
     void transmit(const char* cstring);
