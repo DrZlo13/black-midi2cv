@@ -2,7 +2,7 @@
 #include <main.h>
 #include <string>
 #include "hal/hal.h"
-#include "hl-hal/dac.h"
+#include "hl_hal/dac.h"
 #include "midi/midi-parser.h"
 #include "midi/midi-usb-message.h"
 #include <etl/include/etl/queue_spsc_atomic.h>

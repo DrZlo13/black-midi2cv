@@ -1,4 +1,4 @@
-#include "hal-timer.h"
+#include "hal_timer.h"
 
 HalTimer::HalTimer(TIM_TypeDef* timer) {
     this->timer = timer;

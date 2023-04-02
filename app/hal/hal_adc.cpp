@@ -1,4 +1,4 @@
-#include "hal-adc.h"
+#include "hal_adc.h"
 
 HalAdc::HalAdc(ADC_TypeDef* adc) {
     this->adc = adc;
