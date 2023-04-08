@@ -164,8 +164,14 @@ add_custom_command(
     COMMAND ${CMAKE_OBJDUMP}
     ARGS "-S" "${PROJECT_NAME}.elf" ">>" "${PROJECT_NAME}.lst")
 
-# Flash firmware to target.
+# Flash firmware to target via ST-Link.
 add_custom_target(flash
     STM32_Programmer_CLI --connect port=swd freq=24000 --write ${BIN_FILE} 0x08000000 --verify --start 0x08000000
     DEPENDS ${PROJECT_NAME}.elf
-    COMMENT "Flashing target hardware")
+    COMMENT "Flashing target hardware via ST-Link")
+
+# Flash firmware to target via DFU.
+add_custom_target(flash_dfu
+    dfu-util -a 0 -s 0x08000000:leave -D ${BIN_FILE}
+    DEPENDS ${PROJECT_NAME}.elf
+    COMMENT "Flashing target hardware via DFU")

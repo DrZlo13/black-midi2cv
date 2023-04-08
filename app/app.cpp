@@ -28,6 +28,8 @@ HalAdc adc_portamento(ADC1);
 DAC dac_ch1(TIM2, HalTimer::Channel::CH1, HalTimer::Channel::CH2);
 DAC dac_ch2(TIM1, HalTimer::Channel::CH1, HalTimer::Channel::CH2);
 
+HalFlash flash;
+
 float get_ideal_voltage_for_note(uint8_t note) {
     const float voltage_per_octave = 1.0f;
     const float voltage_per_note = voltage_per_octave / 12.0f;
@@ -249,6 +251,27 @@ void app_main(void) {
     uart_midi.config(31250, true, false);
     uart_midi.set_interrupt_callback(uart1_event_cb, NULL);
     uart_debug.config(230400, false, true);
+
+    // // test flash erase
+    // uart_debug.transmit("Flash erase test\r\n");
+    // if(flash.erase(HalFlash::Sector::S7_128k)) {
+    //     uart_debug.transmit("Flash erase OK\r\n");
+    // }
+
+    // // test flash write
+    // uart_debug.transmit("Flash write test\r\n");
+    // const uint32_t test_data = 0x12345678;
+    // if(flash.write(HalFlash::Sector::S7_128k, 0, test_data)) {
+    //     uart_debug.transmit("Flash write OK\r\n");
+    // }
+
+    // // test flash read
+    // uart_debug.transmit("Flash read test\r\n");
+    // uint32_t read_data = flash.read(HalFlash::Sector::S7_128k, 0);
+
+    // if(read_data == test_data) {
+    //     uart_debug.transmit("Flash read OK\r\n");
+    // }
 
     // ADC portamento
     // float adc_lp = 0.0f;

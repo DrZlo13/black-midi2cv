@@ -34,7 +34,10 @@ bindings/
 Brewfile.lock.json
 
 # Visual Studio Code
-.vscode/
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/c_cpp_properties.json
 
 # Kate
 .kateproject

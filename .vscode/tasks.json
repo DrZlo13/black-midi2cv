@@ -100,5 +100,10 @@
             "type": "shell",
             "command": "cd build & make flash"
         },
+        {
+            "label": "Flash",
+            "type": "shell",
+            "command": "cd build & make flash"
+        },
     ]
 }
