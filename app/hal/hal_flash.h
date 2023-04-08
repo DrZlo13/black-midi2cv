@@ -30,4 +30,6 @@ public:
     bool erase(Sector sector);
     bool write(Sector sector, size_t offset, uint32_t data);
     uint32_t read(Sector sector, size_t offset);
+
+    size_t get_sector_size(Sector sector);
 };

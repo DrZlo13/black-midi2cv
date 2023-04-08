@@ -3,6 +3,8 @@
 #include <string>
 #include "hal/hal.h"
 #include "hl_hal/dac.h"
+#include "hl_hal/debug.h"
+#include "hl_hal/settings.h"
 #include "midi/midi-parser.h"
 #include "midi/midi-usb-message.h"
 #include <etl/include/etl/queue_spsc_atomic.h>
@@ -15,7 +17,6 @@ using namespace Midi;
 HalGpio gpio_led(GPIOC, LL_GPIO_PIN_13);
 // HalGpio gpio_button(GPIOA, LL_GPIO_PIN_0);
 HalUart uart_midi(USART1);
-HalUart uart_debug(USART2);
 
 HalGpio gpio_clock(GPIO_CLOCK_OUT_GPIO_Port, GPIO_CLOCK_OUT_Pin);
 HalGpio gpio_ch1_gate(GPIO_CH1_GATE_OUT_GPIO_Port, GPIO_CH1_GATE_OUT_Pin);
@@ -27,8 +28,6 @@ HalAdc adc_portamento(ADC1);
 
 DAC dac_ch1(TIM2, HalTimer::Channel::CH1, HalTimer::Channel::CH2);
 DAC dac_ch2(TIM1, HalTimer::Channel::CH1, HalTimer::Channel::CH2);
-
-HalFlash flash;
 
 float get_ideal_voltage_for_note(uint8_t note) {
     const float voltage_per_octave = 1.0f;
@@ -66,32 +65,18 @@ public:
     }
 
     void note_on(VoiceNote note) {
-        uart_debug.transmit(std::to_string((uint32_t)this));
-        uart_debug.transmit(" ON ");
-        uart_debug.transmit(std::to_string(note));
-        uart_debug.transmit("\r\n");
-
         float voltage = get_ideal_voltage_for_note(note);
         set_voltage(voltage);
         set_gate(true);
     }
 
     void note_continue(VoiceNote note) {
-        uart_debug.transmit(std::to_string((uint32_t)this));
-        uart_debug.transmit(" CONT ");
-        uart_debug.transmit(std::to_string(note));
-        uart_debug.transmit("\r\n");
-
         float voltage = get_ideal_voltage_for_note(note);
         set_voltage(voltage);
         set_gate(true);
     }
 
     void note_off() {
-        uart_debug.transmit(std::to_string((uint32_t)this));
-        uart_debug.transmit(" OFF");
-        uart_debug.transmit("\r\n");
-
         set_gate(false);
     }
 
@@ -121,7 +106,7 @@ private:
 
 void core_crash(const char* message) {
     if(message != NULL) {
-        uart_debug.transmit(message);
+        Debug::error("CRASH", message);
     }
     Error_Handler();
 }
@@ -141,10 +126,10 @@ void voice_stop(void* ctx) {
     voice->note_off();
 }
 
-void uart1_event_cb(HalUart::Event event, uint8_t data, void* context) {
+void midi_uart_event_cb(HalUart::Event event, uint8_t data, void* context) {
     if(event == HalUart::Event::RXNotEmpty) {
         if(!uart_midi_queue.push(data)) {
-            core_crash("Uart-MIDI queue full");
+            Debug::error("Uart-MIDI", "queue full");
         }
     }
 }
@@ -155,7 +140,7 @@ extern "C" void midi_device_receive(uint8_t* buffer, uint32_t length) {
 
     for(uint8_t i = 0; i < data_size; i++) {
         if(!usb_device_midi_queue.push(buffer[1 + i])) {
-            core_crash("USBD-MIDI queue full");
+            Debug::error("USB-MIDI", "queue full");
         }
     }
 }
@@ -231,6 +216,8 @@ void process_midi_event(
     gpio_led.write(1);
 }
 
+SettingsManager settings_manager;
+
 void app_main(void) {
     hal_init();
 
@@ -247,31 +234,23 @@ void app_main(void) {
     // Gpio inputs
     gpio_mode.config(HalGpio::Mode::Input, HalGpio::Pull::Up);
 
-    // UART
+    // Midi-uart
     uart_midi.config(31250, true, false);
-    uart_midi.set_interrupt_callback(uart1_event_cb, NULL);
-    uart_debug.config(230400, false, true);
+    uart_midi.set_interrupt_callback(midi_uart_event_cb, NULL);
 
-    // // test flash erase
-    // uart_debug.transmit("Flash erase test\r\n");
-    // if(flash.erase(HalFlash::Sector::S7_128k)) {
-    //     uart_debug.transmit("Flash erase OK\r\n");
-    // }
+    Debug::init();
 
-    // // test flash write
-    // uart_debug.transmit("Flash write test\r\n");
-    // const uint32_t test_data = 0x12345678;
-    // if(flash.write(HalFlash::Sector::S7_128k, 0, test_data)) {
-    //     uart_debug.transmit("Flash write OK\r\n");
-    // }
+    const Settings settings_default = {
+        .dac1_max_voltage = 8.0f,
+        .dac2_max_voltage = 8.0f,
+    };
 
-    // // test flash read
-    // uart_debug.transmit("Flash read test\r\n");
-    // uint32_t read_data = flash.read(HalFlash::Sector::S7_128k, 0);
+    Settings settings;
 
-    // if(read_data == test_data) {
-    //     uart_debug.transmit("Flash read OK\r\n");
-    // }
+    if(!settings_manager.load(&settings, &settings_default)) {
+        Debug::error("Settings", "Invalid settings, using defaults");
+        settings_manager.save(&settings_default);
+    }
 
     // ADC portamento
     // float adc_lp = 0.0f;
@@ -289,13 +268,15 @@ void app_main(void) {
     // }
 
     // DACs
+    dac_ch1.set_max_voltage(settings.dac1_max_voltage);
     dac_ch1.start();
+
+    dac_ch2.set_max_voltage(settings.dac2_max_voltage);
     dac_ch2.start();
 
     dac_ch1.set_voltage(0.0f);
     dac_ch2.set_voltage(0.0f);
 
-    uart_debug.transmit("UART2/DEBUG\r\n");
     gpio_led.write(1);
 
     MidiParser parser;

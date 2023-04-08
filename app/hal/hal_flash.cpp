@@ -133,3 +133,21 @@ uint32_t HalFlash::read(Sector sector, size_t offset) {
 
     return *reinterpret_cast<volatile uint32_t*>(address);
 }
+
+size_t HalFlash::get_sector_size(Sector sector) {
+    switch(sector) {
+    case S0_16k:
+    case S1_16k:
+    case S2_16k:
+    case S3_16k:
+        return 16 * 1024;
+    case S4_64k:
+        return 64 * 1024;
+    case S5_128k:
+    case S6_128k:
+    case S7_128k:
+        return 128 * 1024;
+    default:
+        return 0;
+    }
+}
