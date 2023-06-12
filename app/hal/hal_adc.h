@@ -41,5 +41,6 @@ public:
 
     void setup_channel(Channel channel);
     void start_conversion(void);
+    bool is_conversion_complete(void);
     uint32_t get_value(void);
 };

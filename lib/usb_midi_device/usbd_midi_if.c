@@ -8,6 +8,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_midi_if.h"
+#include <stdbool.h>
 
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
@@ -77,6 +78,10 @@ static int8_t MIDI_DeInit(USBD_HandleTypeDef* pdev, uint8_t cfgidx) {
      Add your deinitialization code here
   */
     return (0);
+}
+
+bool midi_device_send(uint8_t* buffer, uint32_t length) {
+    return MIDI_Send(buffer, length) == USBD_OK;
 }
 
 /**

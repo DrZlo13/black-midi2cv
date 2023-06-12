@@ -41,6 +41,10 @@ void HalAdc::start_conversion(void) {
     LL_ADC_REG_StartConversionSWStart(ADC1);
 }
 
+bool HalAdc::is_conversion_complete(void) {
+    return LL_ADC_IsActiveFlag_EOCS(ADC1);
+}
+
 uint32_t HalAdc::get_value(void) {
     while(!LL_ADC_IsActiveFlag_EOCS(ADC1)) {
     }

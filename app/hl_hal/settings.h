@@ -6,6 +6,7 @@
 typedef struct {
     float dac1_max_voltage;
     float dac2_max_voltage;
+    size_t pitch_bend_cents;
 } Settings;
 
 #pragma pack(pop)

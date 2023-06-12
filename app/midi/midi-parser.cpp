@@ -18,7 +18,7 @@ bool MidiParser::parse(uint8_t byte) {
         if(byte & kStatusByteMask) {
             // Get MessageType, and Channel
             incoming_message_.channel = byte & kChannelMask;
-            incoming_message_.type = static_cast<MidiMessageType>((byte & kMessageMask) >> 4);
+            incoming_message_.type = static_cast<MessageType>((byte & kMessageMask) >> 4);
 
             // Validate, and move on.
             if(incoming_message_.type < MessageLast) {

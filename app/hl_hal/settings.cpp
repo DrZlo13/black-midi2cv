@@ -11,6 +11,7 @@ typedef struct {
     uint32_t magic;
     uint32_t version;
     uint32_t checksum;
+    uint32_t size;
 } SettingsHeader;
 
 typedef struct {
@@ -53,14 +54,16 @@ static int32_t get_last_valid_offset() {
         if(data.header.magic != 0xffffffff) {
             Debug::info(
                 TAG,
-                "looking at offset %d, magic = %x, version = %d, checksum = %x",
+                "looking at offset %d, magic = %x, version = %d, checksum = %x, size = %d",
                 offset,
                 data.header.magic,
                 data.header.version,
-                data.header.checksum);
+                data.header.checksum,
+                data.header.size);
         }
 
-        if(data.header.magic == SETTINGS_MAGIC && data.header.version == SETTINGS_VERSION) {
+        if(data.header.magic == SETTINGS_MAGIC && data.header.version == SETTINGS_VERSION &&
+           data.header.size == sizeof(Settings)) {
             if(data.header.checksum == checksum(&data.settings, sizeof(Settings))) {
                 Debug::info(TAG, "Found valid settings at offset %d", offset);
                 return offset;
@@ -106,15 +109,17 @@ void SettingsManager::save(const Settings* const settings) {
     data.header.magic = SETTINGS_MAGIC;
     data.header.version = SETTINGS_VERSION;
     data.header.checksum = checksum(settings, sizeof(Settings));
+    data.header.size = sizeof(Settings);
     data.settings = *settings;
 
     Debug::info(
         TAG,
-        "saving at offset %d, magic = %x, version = %d, checksum = %x",
+        "saving at offset %d, magic = %x, version = %d, checksum = %x, size = %d",
         offset,
         data.header.magic,
         data.header.version,
-        data.header.checksum);
+        data.header.checksum,
+        data.header.size);
 
     uint32_t* ptr = reinterpret_cast<uint32_t*>(&data);
     for(size_t i = 0; i < sizeof(SettingsData) / 4; i++) {

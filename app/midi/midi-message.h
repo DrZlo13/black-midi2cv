@@ -1,3 +1,4 @@
+#pragma once
 #include <stdint.h>
 #include "midi-config.h"
 
@@ -5,7 +6,7 @@ namespace Midi {
 /** Parsed from the Status Byte, these are the common Midi Messages that can be handled. \n
 At this time only 3-byte messages are correctly parsed into MidiEvents.
 */
-enum MidiMessageType {
+enum MessageType {
     NoteOff, /**< & */
     NoteOn, /**< & */
     PolyphonicKeyPressure, /**< & */
@@ -113,7 +114,7 @@ struct PitchBendEvent {
 Can be made from MidiEvent
 */
 struct SystemExclusiveEvent {
-    int length;
+    size_t length;
     uint8_t data[SYSEX_BUFFER_LEN]; /**< & */
 };
 /** Struct containing QuarterFrame data.
@@ -192,7 +193,7 @@ struct PolyModeOnEvent {
 */
 struct MidiEvent {
     // Newer ish.
-    MidiMessageType type; /**< & */
+    MessageType type; /**< & */
     int channel; /**< & */
     uint8_t data[2]; /**< & */
     uint8_t sysex_data[SYSEX_BUFFER_LEN]; /**< & */
@@ -257,13 +258,13 @@ struct MidiEvent {
     PitchBendEvent AsPitchBend() {
         PitchBendEvent m;
         m.channel = channel;
-        m.value = ((uint16_t)data[1] << 7) + (data[0] - 8192);
+        m.value = (((uint16_t)data[1] << 7) + data[0]) - 8192;
         return m;
     }
     SystemExclusiveEvent AsSystemExclusive() {
         SystemExclusiveEvent m;
         m.length = sysex_message_len;
-        for(int i = 0; i < SYSEX_BUFFER_LEN; i++) {
+        for(size_t i = 0; i < SYSEX_BUFFER_LEN; i++) {
             m.data[i] = 0;
             if(i < m.length) {
                 m.data[i] = sysex_data[i];

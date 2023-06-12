@@ -1,5 +1,6 @@
 #pragma once
 #include <hal/hal.h>
+#include "debug.h"
 
 #define DAC_VOLTAGE_MAX 8.0f
 #define DAC_VALUE_MAX UINT16_MAX
@@ -40,6 +41,7 @@ public:
         if(value > DAC_VALUE_MAX) {
             value = DAC_VALUE_MAX;
         }
+
         this->timer.set_channel_value(this->ch_msb, (value >> 8) & 0xFF);
         this->timer.set_channel_value(this->ch_lsb, value & 0xFF);
     }

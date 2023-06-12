@@ -122,9 +122,8 @@ string(TIMESTAMP BUILD_DATE "%Y-%m-%d")
 set(INFO_FLAGS
     GIT_BRANCH="${GIT_BRANCH}"
     GIT_COMMIT="${GIT_COMMIT}"
-
     BUILD_DATE="${BUILD_DATE}"
-    TARGET=${FTARGET}
+    TARGET="${TARGET}"
 )
 
 message(STATUS "Branch: ${GIT_BRANCH}")
