@@ -1,3 +1,3 @@
-#include <stdint.h>
+#include <stdlib.h>
 
-constexpr inline uint8_t SYSEX_BUFFER_LEN = 16;
+constexpr inline size_t SYSEX_BUFFER_LEN = 256;

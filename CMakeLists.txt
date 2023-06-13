@@ -6,8 +6,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # specify cross compilers and tools
 set(TOOLCHAIN_BIN_PATH "C:/work/cmake-stm32/arm_toolchain/gcc-arm-none-eabi-10-2020-q4-major/bin")
-set(OPENOCD_PATH "C:/work/cmake-stm32/arm_toolchain/GNU MCU Eclipse/OpenOCD/0.10.0-15")
-set(ST_CUBEPROG_PATH "C:/Program Files/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin")
 
 set(STM32_TARGET_TRIPLET arm-none-eabi)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
@@ -119,14 +117,13 @@ execute_process(
     OUTPUT_VARIABLE GIT_BRANCH
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M:%S")
+string(TIMESTAMP BUILD_DATE "%Y-%m-%d")
 
 set(INFO_FLAGS
     GIT_BRANCH="${GIT_BRANCH}"
     GIT_COMMIT="${GIT_COMMIT}"
-
-    # BUILD_DATE="${BUILD_DATE}"
-    TARGET=${FTARGET}
+    BUILD_DATE="${BUILD_DATE}"
+    TARGET="${TARGET}"
 )
 
 message(STATUS "Branch: ${GIT_BRANCH}")
@@ -143,6 +140,10 @@ set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
 
 set_target_properties(${PROJECT_NAME}.elf PROPERTIES LINKER_LANGUAGE CXX)
+
+# Add voice_allocator_library_cpp
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/lib/voice_allocator_library_cpp")
+target_link_libraries(${PROJECT_NAME}.elf "voice_allocator_library_cpp")
 
 # Print size
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
@@ -162,8 +163,14 @@ add_custom_command(
     COMMAND ${CMAKE_OBJDUMP}
     ARGS "-S" "${PROJECT_NAME}.elf" ">>" "${PROJECT_NAME}.lst")
 
-# Flash firmware to target.
+# Flash firmware to target via ST-Link.
 add_custom_target(flash
-    ${ST_CUBEPROG_PATH}/STM32_Programmer_CLI --connect port=swd freq=24000 --write ${BIN_FILE} 0x08000000 --verify --start 0x08000000
+    STM32_Programmer_CLI --connect port=swd freq=24000 --write ${BIN_FILE} 0x08000000 --verify --start 0x08000000
     DEPENDS ${PROJECT_NAME}.elf
-    COMMENT "Flashing target hardware")
+    COMMENT "Flashing target hardware via ST-Link")
+
+# Flash firmware to target via DFU.
+add_custom_target(flash_dfu
+    dfu-util -a 0 -s 0x08000000:leave -D ${BIN_FILE}
+    DEPENDS ${PROJECT_NAME}.elf
+    COMMENT "Flashing target hardware via DFU")

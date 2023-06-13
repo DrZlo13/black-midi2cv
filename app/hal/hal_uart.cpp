@@ -1,4 +1,4 @@
-#include "hal-uart.h"
+#include "hal_uart.h"
 #include <string.h>
 #include <stm32f4xx_ll_usart.h>
 
@@ -9,7 +9,7 @@ HalUart::HalUart(USART_TypeDef* uart) {
 HalUart::~HalUart() {
 }
 
-void HalUart::config(uint32_t baudrate) {
+void HalUart::config(uint32_t baudrate, bool rx_enable, bool tx_enable) {
     if(LL_USART_IsEnabled(this->uart)) {
         while(!LL_USART_IsActiveFlag_TC(this->uart))
             ;
@@ -21,7 +21,17 @@ void HalUart::config(uint32_t baudrate) {
     USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
     USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
     USART_InitStruct.Parity = LL_USART_PARITY_NONE;
-    USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
+
+    if(rx_enable && tx_enable) {
+        USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
+    } else if(rx_enable) {
+        USART_InitStruct.TransferDirection = LL_USART_DIRECTION_RX;
+    } else if(tx_enable) {
+        USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX;
+    } else {
+        USART_InitStruct.TransferDirection = LL_USART_DIRECTION_NONE;
+    }
+
     USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
     USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
 

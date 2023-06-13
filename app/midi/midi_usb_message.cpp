@@ -1,26 +1,5 @@
-#include <stdint.h>
-#include "../core/core.h"
-
+#include "midi_usb_message.h"
 namespace UsbMidi {
-enum CodeIndex {
-    Misc = 0x0, /**< Reserved,  MIDI Size: 1, 2, 3 */
-    CableEvent = 0x1, /**< Reserved, MIDI Size: 1, 2, 3 */
-    SysEx2Byte = 0x2, /**< MIDI Size: 2 */
-    SysEx3Byte = 0x3, /**< MIDI Size: 3 */
-    SysExStart = 0x4, /**< MIDI Size: 3 */
-    Common1Byte = 0x5, /**< MIDI Size: 1 */
-    SysExEnd1Byte = 0x5, /**< MIDI Size: 1 */
-    SysExEnd2Byte = 0x6, /**< MIDI Size: 2 */
-    SysExEnd3Byte = 0x7, /**< MIDI Size: 3 */
-    NoteOff = 0x8, /**< MIDI Size: 3 */
-    NoteOn = 0x9, /**< MIDI Size: 3 */
-    PolyKeyPress = 0xA, /**< MIDI Size: 3 */
-    ControlChange = 0xB, /**< MIDI Size: 3 */
-    ProgramChange = 0xC, /**< MIDI Size: 2 */
-    ChannelPressure = 0xD, /**< MIDI Size: 2 */
-    PitchBendChange = 0xE, /**< MIDI Size: 3 */
-    SingleByte = 0xF, /**< MIDI Size: 1 */
-};
 
 uint8_t extract_cable_number(uint8_t data) {
     return (data >> 4) & 0b00001111;
@@ -91,22 +70,18 @@ uint8_t valid_message_data_size(CodeIndex code_index) {
     return data_size;
 }
 
-struct Message {
-    uint8_t cable_number;
-    CodeIndex code_index;
-    uint8_t midi[3];
-
-    Message(uint8_t* data, uint32_t length);
-};
-
 Message::Message(uint8_t* data, uint32_t length) {
-    if(length != 4) core_crash("Invalid MIDI-USB protocol");
+    // if(length != 4) core_crash("Invalid MIDI-USB protocol");
 
     cable_number = extract_cable_number(data[0]);
     code_index = extract_code_index(data[0]);
     midi[0] = data[1];
     midi[1] = data[2];
     midi[2] = data[3];
+}
+
+uint8_t make_header(uint8_t cable_number, CodeIndex code_index) {
+    return (cable_number << 4) | code_index;
 }
 
 }

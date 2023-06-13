@@ -17,7 +17,7 @@ private:
     const uint8_t kRealTimeMask = 0xF8;
     const uint8_t kSystemRealTimeMask = 0x07;
 
-    Midi::MidiMessageType running_status_;
+    Midi::MessageType running_status_;
     ParserState pstate_;
     Midi::MidiEvent incoming_message_;
 
