@@ -2,6 +2,8 @@
 #include "debug.h"
 #include <cstdarg>
 
+// #define DEBUG_OFF 1
+
 static HalUart uart_debug(USART2);
 static size_t tick = 0;
 
@@ -20,6 +22,13 @@ enum Level {
 };
 
 void print(Level level, const char* tag, const char* message, va_list args) {
+#ifdef DEBUG_OFF
+    UNUSED(level);
+    UNUSED(tag);
+    UNUSED(message);
+    UNUSED(args);
+    UNUSED(tick);
+#else
     uart_debug.transmit(std::to_string(tick));
 
     switch(level) {
@@ -47,6 +56,7 @@ void print(Level level, const char* tag, const char* message, va_list args) {
     uart_debug.transmit("\r\n");
 
     tick++;
+#endif
 }
 
 void init(void) {

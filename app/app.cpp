@@ -18,16 +18,15 @@ constexpr uint8_t midi_sysex_manufacturer_id[3] = {0x00, 0x21, 0x73};
 etl::queue_spsc_atomic<uint8_t, 256> uart_midi_queue;
 etl::queue_spsc_atomic<uint8_t, 256> usb_device_midi_queue;
 
-HalGpio gpio_led(GPIOC, LL_GPIO_PIN_13);
-// HalGpio gpio_button(GPIOA, LL_GPIO_PIN_0);
+HalGpio gpio_led(GPIO(C, 13));
 HalUart uart_midi(USART1);
 
-HalGpio gpio_clock(GPIO_CLOCK_OUT_GPIO_Port, GPIO_CLOCK_OUT_Pin);
-HalGpio gpio_ch1_gate(GPIO_CH1_GATE_OUT_GPIO_Port, GPIO_CH1_GATE_OUT_Pin);
-HalGpio gpio_ch2_gate(GPIO_CH2_GATE_OUT_GPIO_Port, GPIO_CH2_GATE_OUT_Pin);
-HalGpio gpio_mode(GPIO_MODE_IN_GPIO_Port, GPIO_MODE_IN_Pin);
+HalGpio gpio_clock(GPIO(B, 1));
+HalGpio gpio_ch1_gate(GPIO(B, 0));
+HalGpio gpio_ch2_gate(GPIO(A, 7));
+HalGpio gpio_mode(GPIO(B, 12));
 
-HalGpio gpio_portamento(ADC_PORTAMENTO_IN_GPIO_Port, ADC_PORTAMENTO_IN_Pin);
+HalGpio gpio_portamento(GPIO(A, 5));
 HalAdc adc_portamento(ADC1);
 
 DAC dac_ch1(TIM2, HalTimer::Channel::CH1, HalTimer::Channel::CH2);
