@@ -14,6 +14,9 @@
 #include <voice_allocator.h>
 
 constexpr uint8_t midi_sysex_manufacturer_id[3] = {0x00, 0x21, 0x73};
+constexpr size_t voice_count = 2;
+
+std::bitset<2> Voice::gates;
 
 etl::queue_spsc_atomic<uint8_t, 256> uart_midi_queue;
 etl::queue_spsc_atomic<uint8_t, 256> usb_device_midi_queue;
@@ -21,9 +24,12 @@ etl::queue_spsc_atomic<uint8_t, 256> usb_device_midi_queue;
 HalGpio gpio_led(GPIO(C, 13));
 HalUart uart_midi(USART1);
 
-HalGpio gpio_clock(GPIO(B, 1));
-HalGpio gpio_ch1_gate(GPIO(B, 0));
-HalGpio gpio_ch2_gate(GPIO(A, 7));
+HalGpio gpio_clock(GPIO(B, 0));
+HalGpio gpio_gate(GPIO(B, 1));
+// HalGpio gpio_gate(GPIO(A, 7));
+
+// HalGpio gpio_ch1_gate(GPIO(B, 0));
+// HalGpio gpio_ch2_gate(GPIO(A, 7));
 HalGpio gpio_mode(GPIO(B, 12));
 
 HalGpio gpio_portamento(GPIO(A, 5));
@@ -89,20 +95,20 @@ static inline uint8_t note_without_octave(uint8_t note) {
 
 static void process_midi_note_on(const Midi::NoteOnEvent& note_event, auto& voice_manager) {
     voice_manager.note_on(note_event.note);
-    Debug::info(
-        "MIDI",
-        "Note ON, note: %s, velocity: %d",
-        Midi::note_name(note_event.note),
-        note_event.velocity);
+    // Debug::info(
+    //     "MIDI",
+    //     "Note ON, note: %s, velocity: %d",
+    //     Midi::note_name(note_event.note),
+    //     note_event.velocity);
 }
 
 static void process_midi_note_off(const Midi::NoteOffEvent& note_event, auto& voice_manager) {
     voice_manager.note_off(note_event.note);
-    Debug::info(
-        "MIDI",
-        "Note OFF, note: %s, velocity: %d",
-        Midi::note_name(note_event.note),
-        note_event.velocity);
+    // Debug::info(
+    //     "MIDI",
+    //     "Note OFF, note: %s, velocity: %d",
+    //     Midi::note_name(note_event.note),
+    //     note_event.velocity);
 }
 
 static void process_midi_pitch_bend(const Midi::PitchBendEvent& pitch_bend_event, auto& voices) {
@@ -198,7 +204,11 @@ static void process_midi_event(Midi::MidiEvent* event, auto& voice_manager, auto
     gpio_led.write(0);
     switch(event->type) {
     case Midi::NoteOn:
-        process_midi_note_on(event->AsNoteOn(), voice_manager);
+        if(event->AsNoteOn().velocity == 0) {
+            process_midi_note_off(event->AsNoteOff(), voice_manager);
+        } else {
+            process_midi_note_on(event->AsNoteOn(), voice_manager);
+        }
         break;
     case Midi::NoteOff:
         process_midi_note_off(event->AsNoteOff(), voice_manager);
@@ -262,10 +272,10 @@ static void tick(void* ctx) {
 
         adc_portamento.start_conversion();
 
-        static uint32_t counter = 0;
-        if(counter++ % 100 == 0) {
-            Debug::info("ADC", "%f", portamento_value);
-        }
+        // static uint32_t counter = 0;
+        // if(counter++ % 100 == 0) {
+        //     Debug::info("ADC", "%f", portamento_value);
+        // }
     }
 
     for(auto& voice : context->voices) {
@@ -292,21 +302,21 @@ void do_main_cycle(auto& parser, auto& voice_manager, auto& voices) {
     }
 }
 
-void change_strategy(voice_allocator::VoiceManager<2>* voice_manager, bool poly) {
+void change_strategy(voice_allocator::VoiceManager<voice_count>* voice_manager, bool poly) {
     using namespace voice_allocator;
     voice_manager->reset();
     if(poly) {
         Debug::info("Mode", "Poly");
-        voice_manager->set_strategy(VoiceManager<2>::Strategy::PolyLeastRecentlyUsed);
+        voice_manager->set_strategy(VoiceManager<voice_count>::Strategy::PolyLeastRecentlyUsed);
     } else {
         Debug::info("Mode", "Unison");
-        voice_manager->set_strategy(VoiceManager<2>::Strategy::UnisonHighestNote);
+        voice_manager->set_strategy(VoiceManager<voice_count>::Strategy::UnisonHighestNote);
     }
 }
 
 void gpio_mode_change_cb(void* context) {
     using namespace voice_allocator;
-    VoiceManager<2>* voice_manager = static_cast<VoiceManager<2>*>(context);
+    VoiceManager<voice_count>* voice_manager = static_cast<VoiceManager<voice_count>*>(context);
     bool poly = gpio_mode.read();
     change_strategy(voice_manager, poly);
 }
@@ -328,8 +338,7 @@ void app_main(void) {
 
     // Gpio outputs
     gpio_clock.config(HalGpio::Mode::OutputPushPull);
-    gpio_ch1_gate.config(HalGpio::Mode::OutputPushPull);
-    gpio_ch2_gate.config(HalGpio::Mode::OutputPushPull);
+    gpio_gate.config(HalGpio::Mode::OutputPushPull);
     gpio_led.config(HalGpio::Mode::OutputPushPull);
 
     // Gpio inputs
@@ -356,8 +365,8 @@ void app_main(void) {
 
     MidiParser parser;
 
-    Voice voice_1(dac_ch1, gpio_ch1_gate);
-    Voice voice_2(dac_ch2, gpio_ch2_gate);
+    Voice voice_1(dac_ch1, gpio_gate, 0);
+    Voice voice_2(dac_ch2, gpio_gate, 1);
 
     Voices voices = {{&voice_1, &voice_2}};
 
@@ -367,7 +376,7 @@ void app_main(void) {
 
     using namespace voice_allocator;
 
-    VoiceManager<2> voice_manager;
+    VoiceManager<voice_count> voice_manager;
     VoiceOutputCallbacks callbacks[2] = {
         {voice_start, voice_continue, voice_stop}, {voice_start, voice_continue, voice_stop}};
     void* contexts[2] = {&voice_1, &voice_2};

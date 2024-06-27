@@ -1,6 +1,7 @@
 #pragma once
 #include <hal/hal.h>
 #include <hl_hal/dac.h>
+#include <bitset>
 
 class Voice {
 public:
@@ -10,26 +11,25 @@ private:
     float voltage_target;
     float voltage_current;
     float portamento_rate;
-    bool gate;
     DAC& dac;
     HalGpio& gate_pin;
     VoiceNote note;
     int32_t pitch_bend_cents;
 
+    size_t index;
+    static std::bitset<2> gates;
+
 public:
-    Voice(DAC& dac, HalGpio& gate_pin)
+    Voice(DAC& dac, HalGpio& gate_pin, size_t index)
         : voltage_target(0.0f)
         , voltage_current(0.0f)
         , portamento_rate(0.0f)
-        , gate(false)
         , dac(dac)
         , gate_pin(gate_pin)
         , note(0)
-        , pitch_bend_cents(0) {
-        gate = false;
-        voltage_target = 0.0f;
-        voltage_current = 0.0f;
-        portamento_rate = 0.0f;
+        , pitch_bend_cents(0)
+        , index(index) {
+        gates.reset();
     };
 
     void set_portamento_rate(float rate) {
@@ -39,6 +39,7 @@ public:
     void note_on(VoiceNote _note) {
         note = _note;
         float voltage = get_ideal_voltage_for_note(note, pitch_bend_cents);
+        Debug::info("V", "Voice %d: note %d, voltage %f", index, note, voltage);
         set_voltage(voltage);
         set_gate(true);
     }
@@ -79,8 +80,17 @@ private:
     }
 
     void set_gate(bool _gate) {
-        gate = _gate;
-        gate_pin.write(gate);
+        if(_gate) {
+            gates.set(index);
+        } else {
+            gates.reset(index);
+        }
+
+        if(gates.count()) {
+            gate_pin.write(true);
+        } else {
+            gate_pin.write(false);
+        }
     }
 
     float get_ideal_voltage_for_note(uint8_t note, float cents_offset = 0.0f) {
