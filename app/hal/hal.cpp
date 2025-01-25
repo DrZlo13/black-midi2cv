@@ -1,6 +1,8 @@
 #include "hal.h"
 
 void hal_init(void) {
+    HalCortex::init();
+
     NVIC_SetPriority(EXTI0_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
     NVIC_EnableIRQ(EXTI0_IRQn);
 

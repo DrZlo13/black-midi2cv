@@ -311,10 +311,14 @@ void gpio_mode_change_cb(void* context) {
     change_strategy(voice_manager, poly);
 }
 
+void app_i2c_test(void);
+
 void app_main(void) {
     hal_init();
     Debug::init();
     Debug::info("Version", version_string);
+
+    app_i2c_test();
 
     if(!settings_manager.load(&settings, &settings_default)) {
         Debug::error("Settings", "Invalid settings, using defaults");
@@ -380,5 +384,19 @@ void app_main(void) {
 
     while(true) {
         do_main_cycle(parser, voice_manager, voices);
+    }
+}
+
+void app_i2c_test(void) {
+    // I2C scan
+    Debug::info("I2C", "Scanning...");
+    for(uint8_t i = 0; i < 128; i++) {
+        if(HalI2C::is_device_ready(i, 2000)) {
+            Debug::info("I2C", "Found device at 0x%02X", i);
+        }
+    }
+
+    Debug::info("I2C", "Done");
+    while(true) {
     }
 }

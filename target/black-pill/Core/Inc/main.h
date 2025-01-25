@@ -29,8 +29,9 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-// #include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal.h"
 #include "stm32f4xx_ll_adc.h"
+#include "stm32f4xx_ll_i2c.h"
 #include "stm32f4xx_ll_rcc.h"
 #include "stm32f4xx_ll_bus.h"
 #include "stm32f4xx_ll_system.h"
@@ -95,6 +96,7 @@ void Error_Handler(void);
 #define TIM2_CH1_CH1_MSB_GPIO_Port GPIOA
 #define TIM2_CH2_CH1_LSB_Pin LL_GPIO_PIN_3
 #define TIM2_CH2_CH1_LSB_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
@@ -104,5 +106,3 @@ void Error_Handler(void);
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

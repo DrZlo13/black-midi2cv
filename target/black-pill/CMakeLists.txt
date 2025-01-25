@@ -40,6 +40,7 @@ file(GLOB TARGET_SOURCES
 	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c
 	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_adc.c
 	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_tim.c
+	${TARGET_SOURCE_DIR}/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_i2c.c
 	${TARGET_SOURCE_DIR}/USB/usb_interrupts.c
 	${TARGET_SOURCE_DIR}/USB/Device/App/usb_device.c
 	${TARGET_SOURCE_DIR}/USB/Device/App/usbd_desc.c
