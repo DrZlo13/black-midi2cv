@@ -1,3 +1,4 @@
+#pragma once
 #include "hal_adc.h"
 #include "hal_gpio.h"
 #include "hal_uart.h"
