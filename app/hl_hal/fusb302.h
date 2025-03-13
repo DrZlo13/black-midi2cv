@@ -5,13 +5,14 @@
 namespace FUSB302 {
 
 enum EventType {
+    None,
     ConnectedDevice,
     ConnectedHost,
     Disconnected,
 };
 
-typedef void (*EventCallback)(EventType event, void* context);
+bool init(void);
 
-bool init(HalGpio& int_gpio, EventCallback callback, void* context);
+EventType poll(void);
 
 }; // namespace FUSB302

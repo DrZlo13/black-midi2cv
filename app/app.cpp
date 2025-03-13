@@ -29,8 +29,6 @@ HalGpio gpio_mode(GPIO(B, 12));
 HalGpio gpio_portamento(GPIO(A, 5));
 HalAdc adc_portamento(ADC1);
 
-HalGpio gpio_fusb302_int(GPIO(A, 3));
-
 DAC dac_ch1(TIM2, HalTimer::Channel::CH1, HalTimer::Channel::CH2);
 DAC dac_ch2(TIM1, HalTimer::Channel::CH1, HalTimer::Channel::CH2);
 
@@ -390,46 +388,37 @@ void app_main(void) {
 }
 
 #include "hl_hal/fusb302.h"
+static size_t counter = 0;
+
+void tick_callback(void* context) {
+    counter++;
+
+    if(counter % 2 == 0) {
+        FUSB302::EventType event = FUSB302::poll();
+
+        switch(event) {
+        case FUSB302::EventType::None:
+            break;
+        case FUSB302::EventType::ConnectedDevice:
+            Debug::info("FUSB302", "Connected device");
+            break;
+        case FUSB302::EventType::ConnectedHost:
+            Debug::info("FUSB302", "Connected host");
+            break;
+        case FUSB302::EventType::Disconnected:
+            Debug::info("FUSB302", "Disconnected");
+            break;
+        }
+    }
+}
 
 void app_i2c_test(void) {
-    // // I2C scan
-    // Debug::info("I2C", "Scanning...");
-    // for(uint8_t i = 0; i < 128; i++) {
-    //     if(HalI2C::is_device_ready(i, 2000)) {
-    //         Debug::info("I2C", "Found device at 0x%02X", i);
-    //     }
-    // }
+    HalSysTick::init(1);
+    HalSysTick::set_callback(tick_callback, NULL);
 
-    // Debug::info("I2C", "Done");
-
-    // uint8_t fusb_reg_value = 0;
-
-    // gpio_fusb302_int.config(HalGpio::Mode::InterruptFall, HalGpio::Pull::Up);
-    // gpio_fusb302_int.set_interrupt_callback(
-    //     [](void* ctx) { Debug::info("I2C", "FUSB302B INT"); }, NULL);
-
-    // if(HalI2C::read_mem(0x22, 0x01, std::span<uint8_t>(&fusb_reg_value, 1), 200000)) {
-    //     Debug::info("I2C", "FUSB302B found, REG 0x01: 0x%02X", fusb_reg_value);
-    // } else {
-    //     Debug::error("I2C", "FUSB302B not found");
-    // }
-
-    FUSB302::init(
-        gpio_fusb302_int,
-        [](FUSB302::EventType event, void* context) {
-            switch(event) {
-            case FUSB302::EventType::ConnectedDevice:
-                Debug::info("FUSB302", "Connected device");
-                break;
-            case FUSB302::EventType::ConnectedHost:
-                Debug::info("FUSB302", "Connected host");
-                break;
-            case FUSB302::EventType::Disconnected:
-                Debug::info("FUSB302", "Disconnected");
-                break;
-            }
-        },
-        NULL);
+    if(!FUSB302::init()) {
+        core_crash("FUSB302 init failed");
+    }
 
     while(true) {
     }

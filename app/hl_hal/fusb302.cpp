@@ -5,6 +5,8 @@
 
 namespace FUSB302 {
 
+const uint8_t I2C_ADDR = 0x22;
+
 // Register 0x01: Device ID
 typedef struct {
     uint8_t REVISION_ID : 2;
@@ -219,243 +221,301 @@ typedef struct {
     uint8_t I_VBUSOK : 1;
 } INTERRUPT;
 
-static EventCallback _callback;
-static void* _context;
+template <typename T> class Reg {
+public:
+    const uint8_t _address;
+    T value = {0};
 
-static void int_cb(void* context) {
-    INTERRUPT interrupt;
-    if(!HalI2C::read_mem(
-           0x22, 0x42, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&interrupt), 1), 200000)) {
-        Debug::error("I2C", "FUSB302B interrupt read failed");
-        return;
-    } else {
-        Debug::info(
-            "I2C",
-            "FUSB302B interrupt: I_BC_LVL: %d, I_COLLISION: %d, I_WAKE: %d, I_ALERT: %d, "
-            "I_CRC_CHK: %d, I_COMP_CHNG: %d, I_ACTIVITY: %d, I_VBUSOK: %d",
-            interrupt.I_BC_LVL,
-            interrupt.I_COLLISION,
-            interrupt.I_WAKE,
-            interrupt.I_ALERT,
-            interrupt.I_CRC_CHK,
-            interrupt.I_COMP_CHNG,
-            interrupt.I_ACTIVITY,
-            interrupt.I_VBUSOK);
+    Reg(uint8_t address)
+        : _address(address) {
     }
 
-    INTERRUPTA interrupta;
-    if(!HalI2C::read_mem(
-           0x22, 0x3E, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&interrupta), 1), 200000)) {
-        Debug::error("I2C", "FUSB302B interrupta read failed");
-        return;
-    } else {
-        Debug::info(
-            "I2C",
-            "FUSB302B interrupta: I_HARDRST: %d, I_SOFTRST: %d, I_TXSENT: %d, I_HARDSENT: %d, "
-            "I_RETRYFAIL: %d, I_SOFTFAIL: %d, I_TOGDONE: %d, I_OCP_TEMP: %d",
-            interrupta.I_HARDRST,
-            interrupta.I_SOFTRST,
-            interrupta.I_TXSENT,
-            interrupta.I_HARDSENT,
-            interrupta.I_RETRYFAIL,
-            interrupta.I_SOFTFAIL,
-            interrupta.I_TOGDONE,
-            interrupta.I_OCP_TEMP);
+    bool read(void) {
+        bool result = HalI2C::read_mem(
+            I2C_ADDR, _address, std::span(reinterpret_cast<uint8_t*>(&value), sizeof(T)), 200000);
+        if(!result) {
+            Debug::error("I2C", "FUSB302B read %02X failed", _address);
+        }
+        return result;
     }
 
-    INTERRUPTB interruptb;
-    if(!HalI2C::read_mem(
-           0x22, 0x3F, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&interruptb), 1), 200000)) {
-        Debug::error("I2C", "FUSB302B interruptb read failed");
-        return;
-    } else {
-        Debug::info("I2C", "FUSB302B interruptb: I_GCRCSENT: %d", interruptb.I_GCRCSENT);
+    bool write(void) {
+        bool result = HalI2C::write_mem(
+            I2C_ADDR, _address, std::span(reinterpret_cast<uint8_t*>(&value), sizeof(T)), 200000);
+        if(!result) {
+            Debug::error("I2C", "FUSB302B write %02X failed", _address);
+        }
+        return result;
     }
+};
 
-    STATUS0 status0;
-    if(!HalI2C::read_mem(
-           0x22, 0x40, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&status0), 1), 200000)) {
-        Debug::error("I2C", "FUSB302B status0 read failed");
-        return;
-    } else {
-        Debug::info(
-            "I2C",
-            "FUSB302B status0: BC_LVL: %d, WAKE: %d, ALERT: %d, CRC_CHK: %d, COMP: %d, "
-            "ACTIVITY: %d, VBUSOK: %d",
-            status0.BC_LVL,
-            status0.WAKE,
-            status0.ALERT,
-            status0.CRC_CHK,
-            status0.COMP,
-            status0.ACTIVITY,
-            status0.VBUSOK);
-    }
+// static bool manual_toggle(void) {
+//     Reg<RESET> reset_reg(0x0C);
+//     reset_reg.value.SW_RES = 1;
+//     reset_reg.write();
+
+//     HalCortex::delay_us(1000);
+
+//     Reg<DEVICE_ID> device_id_reg(0x01);
+//     device_id_reg.read();
+//     Debug::info(
+//         "I2C",
+//         "FUSB302B found, REG 0x01: REVISION_ID: %d, PRODUCT_ID: %d, VERSION_ID: %d",
+//         device_id_reg.value.REVISION_ID,
+//         device_id_reg.value.PRODUCT_ID,
+//         device_id_reg.value.VERSION_ID);
+
+//     Reg<POWER> power_reg(0x0B);
+//     power_reg.value.PWR_ = 0x0F;
+//     power_reg.write();
+
+//     Reg<CONTROL0> control0_reg(0x06);
+//     control0_reg.read();
+//     control0_reg.value.HOST_CUR = 0b01;
+//     control0_reg.write();
+
+//     while(true) {
+//         Reg<SWITCHES0> switches0_backup_reg(0x02);
+//         switches0_backup_reg.read();
+
+//         // Measure CC1
+//         {
+//             Reg<SWITCHES0> switches0_reg(0x02);
+//             switches0_reg.value.PU_EN1 = 1;
+//             switches0_reg.value.PU_EN2 = 1;
+//             switches0_reg.value.PDWN1 = 0;
+//             switches0_reg.value.PDWN2 = 0;
+//             switches0_reg.value.MEAS_CC1 = 1;
+//             switches0_reg.write();
+
+//             HalCortex::delay_us(10000);
+
+//             Reg<STATUS0> status0_reg(0x40);
+//             status0_reg.read();
+//             Debug::info("I2C", "FUSB302B status0: BC_LVL: %d", status0_reg.value.BC_LVL);
+
+//             switches0_reg.value.MEAS_CC1 = 0;
+//             switches0_reg.write();
+//         }
+
+//         // Measure CC2
+//         {
+//             Reg<SWITCHES0> switches0_reg(0x02);
+//             switches0_reg.value.PU_EN1 = 1;
+//             switches0_reg.value.PU_EN2 = 1;
+//             switches0_reg.value.PDWN1 = 0;
+//             switches0_reg.value.PDWN2 = 0;
+//             switches0_reg.value.MEAS_CC2 = 1;
+//             switches0_reg.write();
+
+//             HalCortex::delay_us(10000);
+
+//             Reg<STATUS0> status0_reg(0x40);
+//             status0_reg.read();
+//             Debug::info("I2C", "FUSB302B status0: BC_LVL: %d", status0_reg.value.BC_LVL);
+
+//             switches0_reg.value.MEAS_CC2 = 0;
+//             switches0_reg.write();
+//         }
+
+//         switches0_backup_reg.write();
+
+//         HalCortex::delay_us(1000000);
+
+//         // Measure VBUS
+//         {
+//             Reg<SWITCHES0> switches0_reg(0x02);
+//             switches0_reg.value.PU_EN1 = 0;
+//             switches0_reg.value.PU_EN2 = 0;
+//             switches0_reg.value.PDWN1 = 1;
+//             switches0_reg.value.PDWN2 = 1;
+//             switches0_reg.write();
+
+//             Reg<MEASURE> measure_reg(0x04);
+//             measure_reg.read();
+//             measure_reg.value.MEAS_VBUS = 1;
+//             measure_reg.write();
+
+//             HalCortex::delay_us(1000000);
+
+//             Reg<STATUS0> status0_reg(0x40);
+//             status0_reg.read();
+//             Debug::info(
+//                 "I2C",
+//                 "FUSB302B status0: BC_LVL: %d, WAKE: %d, ALERT: %d, CRC_CHK: %d, COMP: %d, "
+//                 "ACTIVITY: %d, VBUSOK: %d",
+//                 status0_reg.value.BC_LVL,
+//                 status0_reg.value.WAKE,
+//                 status0_reg.value.ALERT,
+//                 status0_reg.value.CRC_CHK,
+//                 status0_reg.value.COMP,
+//                 status0_reg.value.ACTIVITY,
+//                 status0_reg.value.VBUSOK);
+
+//             measure_reg.value.MEAS_VBUS = 0;
+//             measure_reg.write();
+//         }
+
+//         HalCortex::delay_us(1000000);
+//     }
+
+//     return true;
+// }
+
+enum State {
+    MeasureCC1Start,
+    MeasureCC1End,
+    MeasureCC2Start,
+    MeasureCC2End,
+    MeasureVBUSStart,
+    MeasureVBUSMid,
+    MeasureVBUSEnd,
+};
+
+static State state = MeasureCC1Start;
+static Reg<SWITCHES0> switches0_backup_reg(0x02);
+
+static void measure_cc1_start(void) {
+    switches0_backup_reg.read();
+
+    Reg<SWITCHES0> switches0_reg(0x02);
+    switches0_reg.value.PU_EN1 = 1;
+    switches0_reg.value.PU_EN2 = 1;
+    switches0_reg.value.PDWN1 = 0;
+    switches0_reg.value.PDWN2 = 0;
+    switches0_reg.value.MEAS_CC1 = 1;
+    switches0_reg.write();
 }
 
-bool init(HalGpio& int_gpio, EventCallback callback, void* context) {
-    FUSB302::_callback = callback;
-    FUSB302::_context = context;
+static uint8_t measure_cc1_end(void) {
+    Reg<STATUS0> status0_reg(0x40);
+    status0_reg.read();
 
-    DEVICE_ID device_id = {0};
+    switches0_backup_reg.write();
+    return status0_reg.value.BC_LVL;
+}
 
-    if(HalI2C::read_mem(
-           0x22, 0x01, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&device_id), 1), 200000)) {
-        Debug::info(
-            "I2C",
-            "FUSB302B found, REG 0x01: REVISION_ID: %d, PRODUCT_ID: %d, VERSION_ID: %d",
-            device_id.REVISION_ID,
-            device_id.PRODUCT_ID,
-            device_id.VERSION_ID);
-    } else {
+static void measure_cc2_start(void) {
+    switches0_backup_reg.read();
+
+    Reg<SWITCHES0> switches0_reg(0x02);
+    switches0_reg.value.PU_EN1 = 1;
+    switches0_reg.value.PU_EN2 = 1;
+    switches0_reg.value.PDWN1 = 0;
+    switches0_reg.value.PDWN2 = 0;
+    switches0_reg.value.MEAS_CC2 = 1;
+    switches0_reg.write();
+}
+
+static uint8_t measure_cc2_end(void) {
+    Reg<STATUS0> status0_reg(0x40);
+    status0_reg.read();
+
+    switches0_backup_reg.write();
+    return status0_reg.value.BC_LVL;
+}
+
+static void measure_vbus_start(void) {
+    Reg<SWITCHES0> switches0_reg(0x02);
+    switches0_reg.value.PU_EN1 = 0;
+    switches0_reg.value.PU_EN2 = 0;
+    switches0_reg.value.PDWN1 = 1;
+    switches0_reg.value.PDWN2 = 1;
+    switches0_reg.write();
+}
+
+static void measure_vbus_mid(void) {
+    Reg<MEASURE> measure_reg(0x04);
+    measure_reg.read();
+    measure_reg.value.MEAS_VBUS = 1;
+    measure_reg.write();
+}
+
+static uint8_t measure_vbus_end(void) {
+    Reg<STATUS0> status0_reg(0x40);
+    status0_reg.read();
+
+    Reg<MEASURE> measure_reg(0x04);
+    measure_reg.read();
+    measure_reg.value.MEAS_VBUS = 0;
+    measure_reg.write();
+
+    return status0_reg.value.VBUSOK;
+}
+
+uint8_t cc1_level = 0;
+uint8_t cc2_level = 0;
+uint8_t vbus_valid = 0;
+
+EventType poll(void) {
+    switch(state) {
+    case MeasureCC1Start:
+        state = MeasureCC1End;
+        measure_cc1_start();
+        break;
+    case MeasureCC1End:
+        state = MeasureCC2Start;
+        cc1_level = measure_cc1_end();
+        break;
+    case MeasureCC2Start:
+        state = MeasureCC2End;
+        measure_cc2_start();
+        break;
+    case MeasureCC2End:
+        state = MeasureVBUSStart;
+        cc2_level = measure_cc2_end();
+        break;
+    case MeasureVBUSStart:
+        state = MeasureVBUSMid;
+        measure_vbus_start();
+        break;
+    case MeasureVBUSMid:
+        state = MeasureVBUSEnd;
+        measure_vbus_mid();
+        break;
+    case MeasureVBUSEnd:
+        state = MeasureCC1Start;
+        vbus_valid = measure_vbus_end();
+
+        if(vbus_valid == 1) {
+            return EventType::ConnectedHost;
+        } else if(cc1_level == 1 || cc2_level == 1) {
+            return EventType::ConnectedDevice;
+        }
+        break;
+    }
+
+    return EventType::None;
+}
+
+bool init(void) {
+    Reg<RESET> reset_reg(0x0C);
+    reset_reg.value.SW_RES = 1;
+    reset_reg.write();
+
+    HalCortex::delay_us(1000);
+
+    Reg<DEVICE_ID> device_id_reg(0x01);
+    if(!device_id_reg.read()) {
         Debug::error("I2C", "FUSB302B not found");
         return false;
     }
 
-    int_gpio.config(HalGpio::Mode::InterruptFall, HalGpio::Pull::Up);
-    int_gpio.set_interrupt_callback(int_cb, NULL);
+    Debug::info(
+        "I2C",
+        "FUSB302B found, REG 0x01: REVISION_ID: %d, PRODUCT_ID: %d, VERSION_ID: %d",
+        device_id_reg.value.REVISION_ID,
+        device_id_reg.value.PRODUCT_ID,
+        device_id_reg.value.VERSION_ID);
 
-    CONTROL0 control0;
-    memset(&control0, 0x24, sizeof(control0));
-    control0.HOST_CUR = 0b01;
-    control0.INT_MASK = 0;
-    if(!HalI2C::write_mem(
-           0x22, 0x06, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&control0), 1), 200000)) {
-        Debug::error("I2C", "FUSB302B control0 write failed");
-        return false;
-    } else {
-        uint8_t reg = 0;
-        if(!HalI2C::read_mem(0x22, 0x06, &reg, 200000)) {
-            Debug::error("I2C", "FUSB302B control0 read failed");
-            return false;
-        } else {
-            Debug::info("I2C", "FUSB302B control0: 0x%02X", reg);
-        }
-    }
+    Reg<POWER> power_reg(0x0B);
+    power_reg.value.PWR_ = 0x0F;
+    power_reg.write();
 
-    SWITCHES0 switches0;
-    memset(&switches0, 0x03, sizeof(switches0));
-    switches0.VCONN_CC1 = 0;
-    switches0.VCONN_CC2 = 0;
-    if(!HalI2C::write_mem(0x22, 0x02, reinterpret_cast<uint8_t*>(&switches0), 200000)) {
-        Debug::error("I2C", "FUSB302B switches0 write failed");
-        return false;
-    } else {
-        uint8_t reg = 0;
-        if(!HalI2C::read_mem(0x22, 0x02, &reg, 200000)) {
-            Debug::error("I2C", "FUSB302B switches0 read failed");
-            return false;
-        } else {
-            Debug::info("I2C", "FUSB302B switches0: 0x%02X", reg);
-        }
-    }
-
-    MASK mask;
-    memset(&mask, 0x00, sizeof(mask));
-    if(!HalI2C::write_mem(
-           0x22, 0x0A, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&mask), 1), 200000)) {
-        Debug::error("I2C", "FUSB302B mask write failed");
-        return false;
-    }
-
-    MASKA maska;
-    memset(&maska, 0x00, sizeof(maska));
-    if(!HalI2C::write_mem(
-           0x22, 0x0E, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&maska), 1), 200000)) {
-        Debug::error("I2C", "FUSB302B maska write failed");
-        return false;
-    }
-
-    MASKB maskb;
-    memset(&maskb, 0x00, sizeof(maskb));
-    if(!HalI2C::write_mem(
-           0x22, 0x0F, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&maskb), 1), 200000)) {
-        Debug::error("I2C", "FUSB302B maskb write failed");
-        return false;
-    }
-
-    POWER power;
-    memset(&power, 0x0F, sizeof(power));
-    if(!HalI2C::write_mem(
-           0x22, 0x0B, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&power), 1), 200000)) {
-        Debug::error("I2C", "FUSB302B power write failed");
-        return false;
-    }
-
-    {
-        INTERRUPT interrupt;
-        if(!HalI2C::read_mem(
-               0x22, 0x42, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&interrupt), 1), 200000)) {
-            Debug::error("I2C", "FUSB302B interrupt read failed");
-            return false;
-        } else {
-            Debug::info(
-                "I2C",
-                "FUSB302B interrupt: I_BC_LVL: %d, I_COLLISION: %d, I_WAKE: %d, I_ALERT: %d, "
-                "I_CRC_CHK: %d, I_COMP_CHNG: %d, I_ACTIVITY: %d, I_VBUSOK: %d",
-                interrupt.I_BC_LVL,
-                interrupt.I_COLLISION,
-                interrupt.I_WAKE,
-                interrupt.I_ALERT,
-                interrupt.I_CRC_CHK,
-                interrupt.I_COMP_CHNG,
-                interrupt.I_ACTIVITY,
-                interrupt.I_VBUSOK);
-        }
-
-        INTERRUPTA interrupta;
-        if(!HalI2C::read_mem(
-               0x22,
-               0x3E,
-               std::span<uint8_t>(reinterpret_cast<uint8_t*>(&interrupta), 1),
-               200000)) {
-            Debug::error("I2C", "FUSB302B interrupta read failed");
-            return false;
-        } else {
-            Debug::info(
-                "I2C",
-                "FUSB302B interrupta: I_HARDRST: %d, I_SOFTRST: %d, I_TXSENT: %d, I_HARDSENT: %d, "
-                "I_RETRYFAIL: %d, I_SOFTFAIL: %d, I_TOGDONE: %d, I_OCP_TEMP: %d",
-                interrupta.I_HARDRST,
-                interrupta.I_SOFTRST,
-                interrupta.I_TXSENT,
-                interrupta.I_HARDSENT,
-                interrupta.I_RETRYFAIL,
-                interrupta.I_SOFTFAIL,
-                interrupta.I_TOGDONE,
-                interrupta.I_OCP_TEMP);
-        }
-
-        INTERRUPTB interruptb;
-        if(!HalI2C::read_mem(
-               0x22,
-               0x3F,
-               std::span<uint8_t>(reinterpret_cast<uint8_t*>(&interruptb), 1),
-               200000)) {
-            Debug::error("I2C", "FUSB302B interruptb read failed");
-            return false;
-        } else {
-            Debug::info("I2C", "FUSB302B interruptb: I_GCRCSENT: %d", interruptb.I_GCRCSENT);
-        }
-    }
-
-    CONTROL2 control2;
-    memset(&control2, 0x02, sizeof(control2));
-    control2.TOGGLE = 1;
-    control2.TOG_SAVE_PWR = 0b00;
-
-    if(!HalI2C::write_mem(
-           0x22, 0x10, std::span<uint8_t>(reinterpret_cast<uint8_t*>(&control2), 1), 200000)) {
-        Debug::error("I2C", "FUSB302B control2 write failed");
-        return false;
-    } else {
-        uint8_t reg = 0;
-        if(!HalI2C::read_mem(0x22, 0x10, &reg, 200000)) {
-            Debug::error("I2C", "FUSB302B control2 read failed");
-            return false;
-        } else {
-            Debug::info("I2C", "FUSB302B control2: 0x%02X", reg);
-        }
-    }
+    Reg<CONTROL0> control0_reg(0x06);
+    control0_reg.read();
+    control0_reg.value.HOST_CUR = 0b01;
+    control0_reg.write();
 
     return true;
 }
